@@ -7,7 +7,8 @@ module.exports.addMovie = (req, res) => {
         director: req.body.director,
         year: req.body.year,
         description: req.body.description,
-        genre: req.body.genre
+        genre: req.body.genre,
+        videoUrl: req.body.videoUrl
     });
 
     return newMovie.save()
