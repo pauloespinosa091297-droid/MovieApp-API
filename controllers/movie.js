@@ -32,12 +32,31 @@ module.exports.getMovie = (req, res) => {
 };
 
 module.exports.updateMovie = (req, res) => {
-    return Movie.findByIdAndUpdate(req.params.movieId, req.body, { new: true })
-        .then(movie => {
-            if (!movie) return res.status(404).send({ message: 'Movie not found' });
-            res.status(200).send({ message: 'Movie updated successfully', updatedMovie: movie });
-        })
-        .catch(err => auth.errorHandler(err, req, res));
+
+    const { title, director, year, description, genre, videoUrl } = req.body;
+
+    const updatedFields = {
+        title,
+        director,
+        year,
+        description,
+        genre,
+        videoUrl 
+    };
+
+    return Movie.findByIdAndUpdate(
+        req.params.movieId, 
+        { $set: updatedFields },
+        { new: true, runValidators: true } 
+    )
+    .then(movie => {
+        if (!movie) return res.status(404).send({ message: 'Movie not found' });
+        res.status(200).send({ 
+            message: 'Movie updated successfully', 
+            updatedMovie: movie 
+        });
+    })
+    .catch(err => auth.errorHandler(err, req, res));
 };
 
 module.exports.deleteMovie = (req, res) => {
