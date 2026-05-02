@@ -14,7 +14,8 @@ const movieSchema = new mongoose.Schema({
             userId: { type: String, required: true },
             comment: { type: String, required: true }
         }
-    ]
+    ],
+    videoUrl: { type: String }
 });
 
 module.exports = mongoose.model('Movie', movieSchema);
