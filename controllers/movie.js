@@ -32,31 +32,27 @@ module.exports.getMovie = (req, res) => {
 };
 
 module.exports.updateMovie = (req, res) => {
+  const updatedMovie = {
+    title: req.body.title,
+    director: req.body.director,
+    year: req.body.year,
+    description: req.body.description,
+    genre: req.body.genre,
+    trailerUrl: req.body.trailerUrl,
+  };
 
-    const { title, director, year, description, genre, videoUrl } = req.body;
-
-    const updatedFields = {
-        title,
-        director,
-        year,
-        description,
-        genre,
-        videoUrl 
-    };
-
-    return Movie.findByIdAndUpdate(
-        req.params.movieId, 
-        { $set: updatedFields },
-        { new: true, runValidators: true } 
-    )
-    .then(movie => {
-        if (!movie) return res.status(404).send({ message: 'Movie not found' });
-        res.status(200).send({ 
-            message: 'Movie updated successfully', 
-            updatedMovie: movie 
-        });
+  return Movie.findByIdAndUpdate(req.params.id, updatedMovie, { new: true })
+    .then((movie) => {
+      if (movie) {
+        return res.status(200).send({ message: "Movie updated successfully", movie });
+      }
+      return res.status(404).send({ message: "Movie not found" });
     })
-    .catch(err => auth.errorHandler(err, req, res));
+    .catch((error) =>
+      error.name === "CastError"
+        ? res.status(404).send({ message: "Movie not found" })
+        : errorHandler(error, req, res)
+    );
 };
 
 module.exports.deleteMovie = (req, res) => {
@@ -69,17 +65,42 @@ module.exports.deleteMovie = (req, res) => {
 };
 
 module.exports.addComment = (req, res) => {
-    return Movie.findByIdAndUpdate(
-        req.params.movieId,
-        { $push: { comments: { userId: req.user.id, comment: req.body.comment } } },
-        { new: true }
+  const { comment } = req.body;
+
+  return Movie.findById(req.params.id)
+    .then((movie) => {
+      if (!movie) return res.status(404).send({ message: "Movie not found" });
+
+      movie.comments = movie.comments || [];
+      movie.comments.push({ comment, createdAt: new Date() });
+
+      return movie.save();
+    })
+    .then((updatedMovie) =>
+      res.status(201).send({
+        message: "Comment added successfully",
+       movie: updatedMovie
+      })
     )
-    .then(movie => res.status(201).send({ message: 'Comment added successfully', updatedMovie: movie }))
-    .catch(err => auth.errorHandler(err, req, res));
+    .catch((error) =>
+      error.name === "CastError"
+        ? res.status(404).send({ message: "Movie not found" })
+        : errorHandler(error, req, res)
+    );
 };
 
-module.exports.getComments = (req, res) => {
-    return Movie.findById(req.params.movieId)
-        .then(movie => res.status(200).send({ comments: movie.comments }))
-        .catch(err => auth.errorHandler(err, req, res));
+module.exports.getComment = (req, res) => {
+  return Movie.findById(req.params.id)
+    .then((movie) => {
+      if (!movie) return res.status(404).send({ message: "Movie not found" });
+
+      return res.status(200).send({
+        comments: movie.comments || [],
+      });
+    })
+    .catch((error) =>
+      error.name === "CastError"
+        ? res.status(404).send({ message: "Movie not found" })
+        : errorHandler(error, req, res)
+    );
 };

@@ -15,7 +15,10 @@ const movieSchema = new mongoose.Schema({
             comment: { type: String, required: true }
         }
     ],
-    videoUrl: { type: String }
+    videorUrl: {
+              type: String,
+              default: ""
+            }
 });
 
 module.exports = mongoose.model('Movie', movieSchema);
