@@ -1,30 +1,62 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const auth = require('../auth.js');
+const { errorHandler } = auth;  
+
 
 module.exports.registerUser = (req, res) => {
-    let newUser = new User({
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 10),
-        isAdmin: req.body.isAdmin || false
-    });
+	if (!req.body.email.includes("@")){
+		return res.status(400).send({
+			message: 'Invalid email format'
+		});
+	} else if (req.body.password < 10){
+		return res.status(400).send({
+			message: 'Password must be atleast 10 characters long'
+		});
+	} else {
+		let newUser = new User ({
+			email:req.body.email,
+			password: bcrypt.hashSync(req.body.password, 10)
+		})
 
-    return newUser.save()
-        .then(() => res.status(201).send({ message: 'Registered successfully' }))
-        .catch(err => auth.errorHandler(err, req, res));
+		return newUser.save()
+		.then((result) => res.status(201)
+			.send ({
+			message: 'Registered succesfully',
+		}))
+		.catch(error => errorHandler(error,
+			req,res));
+	}
 };
 
 module.exports.loginUser = (req, res) => {
-    return User.findOne({ email: req.body.email })
-        .then(user => {
-            if (!user) return res.status(404).send({ message: 'User not found' });
 
-            const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.password);
-            if (isPasswordCorrect) {
-                return res.status(200).send({ access: auth.createAccessToken(user) });
+    if(req.body.email.includes("@")){
+
+       return User.findOne({ email : req.body.email })
+        .then(result => {
+            if(result == null){
+               
+                return res.status(404).send({ message: 'No email found' });
             } else {
-                return res.status(401).send({ message: 'Incorrect password' });
+                const isPasswordCorrect = bcrypt.compareSync(req.body.password, result.password);
+                if (isPasswordCorrect) {
+
+                  
+                    return res.status(200).send({ 
+                        access : auth.createAccessToken(result)
+                        })
+                } else {
+
+                   
+                    return res.status(401).send({ message: 'Incorrect email or password' });
+                }
             }
         })
-        .catch(err => auth.errorHandler(err, req, res));
+        .catch(error => errorHandler(error, req, res)); 
+    } else {
+        return res.status(400).send({ message: 'Invalid email format' })
+    }
 };
+
+
