@@ -38,7 +38,7 @@ module.exports.updateMovie = (req, res) => {
     year: req.body.year,
     description: req.body.description,
     genre: req.body.genre,
-    trailerUrl: req.body.trailerUrl,
+    videoUrl: req.body.videoUrl
   };
 
   return Movie.findByIdAndUpdate(req.params.id, updatedMovie, { new: true })
