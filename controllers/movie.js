@@ -41,7 +41,8 @@ module.exports.updateMovie = (req, res) => {
     videoUrl: req.body.videoUrl
   };
 
-  return Movie.findByIdAndUpdate(req.params.id, updatedMovie, { new: true })
+  
+  return Movie.findByIdAndUpdate(req.params.movieId, updatedMovie, { new: true })
     .then((movie) => {
       if (movie) {
         return res.status(200).send({ message: "Movie updated successfully", movie });
@@ -51,7 +52,7 @@ module.exports.updateMovie = (req, res) => {
     .catch((error) =>
       error.name === "CastError"
         ? res.status(404).send({ message: "Movie not found" })
-        : errorHandler(error, req, res)
+        : auth.errorHandler(error, req, res) // Fixed missing 'auth.' prefix here too
     );
 };
 
