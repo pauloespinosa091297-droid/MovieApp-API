@@ -15,6 +15,6 @@ router.delete('/deleteMovie/:movieId', verify, verifyAdmin, movieController.dele
 
 router.patch('/addComment/:movieId', verify, movieController.addComment);
 
-router.get('/getComments/:movieId', movieController.getComments);
+router.get('/getComments/:movieId', movieController.getComment);
 
 module.exports = router;
